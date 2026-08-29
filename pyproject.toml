@@ -1,0 +1,49 @@
+[build-system]
+requires = [
+    "setuptools",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.10"
+name = "waymo"
+readme = "README.md"
+dynamic = [
+    "version",
+]
+dependencies = [
+    "ipython>=8.10",
+    "jupyterlab>=3.0",
+    "notebook",
+    "kedro[jupyter]~=1.5.0",
+    "kedro-datasets[pandas-csvdataset, pandas-exceldataset, pandas-parquetdataset, plotly-plotlydataset, plotly-jsondataset, matplotlib-matplotlibdataset, spark-sparkdataset]>=9.1",
+    "kedro-viz>=6.7.0",
+    "scikit-learn~=1.5.1; python_version <= '3.10'",
+    "scikit-learn~=1.8.0; python_version > '3.10'",
+    "seaborn~=0.12.1",
+]
+
+[project.scripts]
+waymo = "waymo.__main__:main"
+
+[project.entry-points."kedro.hooks"]
+
+[tool.setuptools.dynamic.version]
+attr = "waymo.__version__"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+namespaces = false
+
+[tool.kedro]
+package_name = "waymo"
+project_name = "waymo"
+kedro_init_version = "1.5.0"
+tools = "['PySpark']"
+example_pipeline = "True"
+source_dir = "src"
+
+[tool.kedro_telemetry]
+project_id = "9d220338049f4706b1a693f86f370510"
