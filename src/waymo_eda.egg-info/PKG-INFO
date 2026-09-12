@@ -1,0 +1,129 @@
+Metadata-Version: 2.4
+Name: waymo_eda
+Version: 0.1.0
+Summary: Pipeline de Análisis Exploratorio de Datos (EDA) para el dataset de percepción de Waymo, construido con Kedro.
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: kedro<0.20,>=0.19.0
+Requires-Dist: kedro-datasets[pandas-parquetdataset]>=2.0.0
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: seaborn>=0.12.0
+Requires-Dist: Pillow>=9.0.0
+Requires-Dist: pyarrow>=12.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0; extra == "dev"
+Requires-Dist: kedro-viz>=7.0; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Provides-Extra: waymo
+Requires-Dist: tensorflow>=2.12.0; extra == "waymo"
+Requires-Dist: waymo-open-dataset-tf-2-12-0; extra == "waymo"
+
+# 🚗 Waymo EDA — Análisis Exploratorio de Datos
+
+Pipeline de **Análisis Exploratorio de Datos (EDA)** para el dataset de percepción de [Waymo Open Dataset](https://waymo.com/open/), construido con [Kedro](https://kedro.org/) ≥ 0.19.
+
+## 📋 Descripción
+
+Este proyecto procesa imágenes y anotaciones 3D/2D del dataset Waymo para generar un **reporte integral** antes del entrenamiento. El pipeline incluye:
+
+| Nodo | Descripción |
+|------|------------|
+| `ingest_and_clean_data_node` | Ingesta, limpieza y validación de datos crudos |
+| `analyze_class_balance_node` | Distribución de clases y métricas de desbalance |
+| `analyze_image_specs_node` | Resoluciones, canales y recomendación de resize |
+| `analyze_bounding_boxes_node` | Área, aspect ratio y segmentación por tamaño |
+| `analyze_environmental_conditions_node` | Condiciones de iluminación, clima y oclusión |
+| `generate_eda_report_node` | Reporte HTML interactivo + PNGs estáticos |
+
+## 🚀 Instalación
+
+```bash
+# Clonar e instalar
+cd waymo_eda
+pip install -e ".[dev]"
+
+# (Opcional) Para datos reales de Waymo:
+pip install -e ".[waymo]"
+```
+
+## ▶️ Ejecución
+
+```bash
+# Ejecutar pipeline completo (modo simulación por defecto)
+kedro run
+
+# Ejecutar pipeline por nombre
+kedro run --pipeline data_eda
+
+# Ejecutar un nodo específico
+kedro run --nodes ingest_and_clean_data_node
+```
+
+## 📁 Estructura del Proyecto
+
+```
+waymo_eda/
+├── conf/
+│   ├── base/
+│   │   ├── catalog.yml        # Mapeo de datasets (raw → reporting)
+│   │   ├── parameters.yml     # Parámetros configurables
+│   │   └── logging.yml        # Configuración de logging
+│   └── local/
+│       └── credentials.yml    # Credenciales (no versionado)
+├── src/waymo_eda/
+│   ├── pipeline_registry.py   # Registro de pipelines
+│   ├── settings.py            # Configuración de Kedro
+│   └── pipelines/data_eda/
+│       ├── nodes.py           # 6 funciones-nodo del EDA
+│       └── pipeline.py        # Definición del pipeline
+├── data/
+│   ├── 01_raw/                # Datos crudos (.tfrecord / imágenes)
+│   ├── 02_intermediate/       # Datos limpios (Parquet)
+│   └── 08_reporting/          # Gráficos PNG + reporte HTML
+├── pyproject.toml
+└── README.md
+```
+
+## ⚙️ Configuración
+
+### Modo Simulación (por defecto)
+Genera datos sintéticos representativos del dataset Waymo:
+```yaml
+# conf/base/parameters.yml
+ingestion:
+  ingestion_mode: "simulation"
+  n_synthetic_frames: 500
+```
+
+### Modo TFRecord (datos reales)
+```yaml
+ingestion:
+  ingestion_mode: "tfrecord"
+  raw_data_path: "data/01_raw/"
+```
+
+## 📊 Salidas
+
+Tras la ejecución, los resultados se encuentran en `data/08_reporting/`:
+
+- `eda_report.html` — Reporte HTML interactivo auto-contenido
+- `figures/01_class_distribution.png`
+- `figures/02_image_resolution.png`
+- `figures/03_bbox_area_distribution.png`
+- `figures/04_bbox_aspect_ratio.png`
+- `figures/05_environmental_conditions.png`
+- `figures/06_difficult_objects.png`
+- `*.parquet` — Métricas en formato tabular
+
+## 🛠️ Tecnologías
+
+- **Kedro** ≥ 0.19 — Orquestación de pipelines
+- **pandas** + **pyarrow** — Procesamiento de datos
+- **matplotlib** + **seaborn** — Visualizaciones
+- **NumPy** — Cálculos numéricos
+- **Pillow** / **OpenCV** — Procesamiento de imágenes
